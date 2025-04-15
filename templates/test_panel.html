@@ -4,44 +4,105 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Robot Control Panel</title>
-    <link rel="shortcut icon" href="#">
     <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-<div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl flex flex-col items-center">
-    <h1 class="text-2xl font-bold mb-8">Данные QR-кода</h1>
-    <div class="text-left w-full">
-        <p><strong>QR-данные:</strong></p>
-        <pre class="bg-gray-100 p-4 rounded"><span id="textik">Loading...</span></pre>
-    </div>
-    <div class="mt-8 w-full">
-        <h2 class="text-xl font-bold mb-4">Видеопоток</h2>
-        <img src="/video_feed" alt="Video Feed" class="rounded-lg shadow-lg w-full h-auto">
-    </div>
-    <a href="/logout" class="bg-red-500 text-white py-4 px-6 text-center rounded mt-6">Выйти</a>
-</div>
-<script>
-  async function sendPostRequest(url, data) {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data),
-            });
-            const result = await response.json();
-            console.log(result);
-        }
-  async function fetchData() {
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script>
+        window.onload = function () {
+            document.body.style.zoom = "67%";
+            fetchData();
+        };
+        async function fetchData() {
             const response = await fetch('/get_data');
             const data = await response.json();
             updateUI(data);
         }
-  function updateUI(data) {
+
+        function updateUI(data) {
             document.getElementById('textik').innerText = data.text;
-  }
-  setInterval(fetchData, 500);
-  window.onload = fetchData;
-</script>
+        }
+
+        setInterval(fetchData, 1000);
+
+        window.onload = fetchData;
+    </script>
+    <style>
+        .console {
+            background-color: #1e1e1e;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .button-control {
+            background-color: #2c3e50;
+            color: white;
+            border: 2px solid #34495e;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+        .button-control:hover {
+            background-color: #34495e;
+            transform: scale(1.1);
+        }
+        .button-control:active {
+            background-color: #1abc9c;
+            border-color: #16a085;
+        }
+        .center-button {
+            background-color: #3498db;
+            border: 2px solid #2980b9;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+            transition: all 0.3s ease;
+        }
+        .center-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(52, 152, 219, 0.8);
+        }
+        .logout-button {
+            background: linear-gradient(135deg, #ff4d4d, #ff9999);
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+            box-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
+            transition: all 0.3s ease;
+        }
+        .logout-button:hover {
+            background: linear-gradient(135deg, #ff9999, #ff4d4d);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255, 77, 77, 0.8);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white flex items-center justify-center min-h-screen">
+    <div class="bg-gray-800 p-8 rounded-3xl shadow-2xl w-full max-w-7xl flex">
+        <div class="w-2/3 ml-8 flex flex-col space-y-6">
+            <h1 class="text-3xl font-bold text-blue-400">Robot Control Panel</h1>
+            <div class="console">
+                <pre id="textik">Loading...</pre>
+            </div>
+            <p class="text-gray-400">Contact: <span id="contact">@ALRU8</span></p>
+            <div>
+                <h2 class="text-xl font-bold text-blue-400 mb-4">Camera Feed</h2>
+                <iframe src="https://vk.com/video_ext.php?oid=-230141429&id=456239018&hd=2&hash=653e77a3f54bd946&autoplay=1" width="800" height="400" allow="autoplay; encrypted-media; fullscreen; picture-in-picture; screen-wake-lock;" frameborder="0" allowfullscreen></iframe>
+            </div>
+            <a href="/logout" class="logout-button py-4 px-6 rounded mt-6 text-center">Выйти</a>
+        </div>
+    </div>
 </body>
 </html>

@@ -31,11 +31,10 @@ coords = {
 
 grabber = False
 tablee = False
-konveer = False
 angle_1 = 90
 angle_2 = 90
 
-camera = cv2.VideoCapture(0)
+# camera = cv2.VideoCapture(1)
 
 board = Arduino('COM13')
 servo_pin_1 = 8
@@ -45,21 +44,21 @@ servo_2 = board.get_pin(f'd:{servo_pin_2}:s')
 ser = serial.Serial('COM3', 9600, timeout=1)
 
 
-def generate_frames():
-    while True:
-        success, frame = camera.read()
-        if not success:
-            break
-        else:
-            ret, buffer = cv2.imencode('.jpg', frame)
-            frame = buffer.tobytes()
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+# def generate_frames():
+#     while True:
+#         success, frame = camera.read()
+#         if not success:
+#             break
+#         else:
+#             ret, buffer = cv2.imencode('.jpg', frame)
+#             frame = buffer.tobytes()
+#             yield (b'--frame\r\n'
+#                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 
-@app.route('/video_feed')
-def video_feed():
-    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+# @app.route('/video_feed')
+# def video_feed():
+#     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 @app.route('/')
@@ -175,10 +174,21 @@ def table():
     time.sleep(1)
     return jsonify({'status': 'success'})
 
+@app.route('/reset_table', methods=['POST'])
+def reset_table():
+    file_path = "fields_state.json"
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        print(f"Файл {file_path} удален.")
+    with open(file_path, "w") as file:
+        json.dump({"field1": [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], "field2": [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]], "x1": 8, "y1": 12, "x2": 8, "y2": 12, "current_box_id": 0}, file)
+        print(f"Файл {file_path} создан.")
+    return jsonify({'status': 'success'})
+
 
 @app.route('/start_program', methods=['POST'])
 def start_program():
-    global tablee, angle_1, angle_2, konveer
+    global tablee, angle_1, angle_2
     ser.write(("start_motor" + '\n').encode('utf-8'))
     print('Program started')
     try:
@@ -242,7 +252,7 @@ def start_program():
         angle_2 = 90
     if orientation == 'вертикальная':
         pos_y_conv = 5
-        pos_x_konv = 35
+        pos_x_konv = 25
     else:
         pos_y_conv = 38
     time.sleep(1)
@@ -258,27 +268,26 @@ def start_program():
             break
         time.sleep(0.1)
     time.sleep(1)
-    controller.z_move_pos(-27, 800)
-    coords['z'] -= 27
+    controller.z_move_pos(-36, 800)
+    coords['z'] -= 36
     while True:
         controller.position_timer()
         current_z = controller.wp_axe_z
         print(current_z)
-        if abs(current_z - (-17)) < 0.5:
+        if abs(current_z - (-45)) < 1:
             break
         time.sleep(0.1)
     time.sleep(1)
     send_servo_command(1, 20, 2, angle_2)
     angle_1 = 30
     time.sleep(1)
-    konveer = True
-    controller.z_move_pos(27, 800)
-    coords['z'] += 27
+    controller.z_move_pos(36, 800)
+    coords['z'] += 36
     while True:
         controller.position_timer()
         current_z = controller.wp_axe_z
         print(current_z)
-        if abs(current_z - 10) < 0.5:
+        if abs(current_z - 9) < 1 or current_z >= -9:
             break
         time.sleep(0.1)
     time.sleep(1)
@@ -308,23 +317,25 @@ def start_program():
             break
         time.sleep(0.1)
     time.sleep(1)
-    controller.z_move_pos(-26, 800)
-    coords['z'] -= 26
+    controller.z_move_pos(-35, 800)
+    coords['z'] -= 35
     while True:
         controller.position_timer()
         current_z = controller.wp_axe_z
-        if abs(current_z - (-26)) < 0.5:
+        print(current_z)
+        if abs(current_z - (-35)) < 1:
             break
         time.sleep(0.1)
     time.sleep(1)
     send_servo_command(1, 70, 2, angle_2)
     time.sleep(1)
-    controller.z_move_pos(26, 800)
-    coords['z'] += 26
+    controller.z_move_pos(35, 800)
+    coords['z'] += 35
     while True:
         controller.position_timer()
         current_z = controller.wp_axe_z
-        if abs(current_z - 0) < 0.5:
+        print(current_z)
+        if abs(current_z - 0) < 1 or current_z >= 0:
             break
         time.sleep(0.1)
     time.sleep(1)
@@ -345,7 +356,6 @@ def start_program():
     send_servo_command(1, 90, 2, 0)
     angle_1 = 90
     angle_2 = 0
-    konveer = False
     print('Программа завершена!')
     return jsonify({'status': 'success'})
 
@@ -384,27 +394,24 @@ def reset():
 
 @app.route('/get_data', methods=['GET'])
 def get_data():
-    global konveer
     weight = 0.0
     ser.write(("info" + '\n').encode('utf-8'))
     try:
-        if konveer:
-            weight = 0.0
-        else:
-            line = ser.readline().decode('utf-8').strip()
-            if ',' in line:
-                weight, distance = line.split(',')
-                if weight[0] == '.':
-                    weight = "0" + weight
-                try:
-                    weight = float(weight)
-                except:
-                    weight = 0.0
+        line = ser.readline().decode('utf-8').strip()
+        if ',' in line:
+            weight, distance = line.split(',')
+            if weight[0] == '.':
+                weight = "0" + weight
+            try:
+                weight = float(weight)
+            except:
+                weight = 0.0
     except:
         weight = 0.0
     file_1 = 'tenzo.txt'
     with open(file_1, "w", encoding="utf-8") as f:
         f.write(str(weight))
+    print(weight)
     data = requests.get(url + '/api/v1/get/get_data_txt')
     return jsonify(data.json())
 
